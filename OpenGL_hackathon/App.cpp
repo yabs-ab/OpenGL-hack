@@ -1,6 +1,7 @@
 #include "App.h"
 #include <iostream>
 #include <fstream>
+#include "ModelBuilder.h"
 
 void App::keyCallback(GLFWwindow* w, int key, int scancode, int action, int mods)
 {
@@ -28,12 +29,15 @@ App::App() :
 
 	forwardProgram = createProgram(shaders);
 
-	std::vector<vertex> vetexData = {
+	/*std::vector<vertex> vetexData = {
 		{{0,0.5f,0}, {1,0,0}},
 		{{0.5f,-0.5f,0}, {0,1,0}},
 		{{-0.5f,-0.5f,0}, {0,0,1}},
 	};
-	vertexBuffer = createVertexBuffer(vetexData);
+	vertexBuffer = createVertexBuffer(vetexData);*/
+	ModelBuilder m;
+	models.push_back(m.createSphere(20, 20)->setColor({1,1,1}, {150,150,150}, {255,0,0})->get());
+	//models.push_back(m.createSquare()->setColor({ 1,1,1 }, { 150,150,150 }, { 255,0,0 })->get());
 }
 
 App::~App()
@@ -117,31 +121,20 @@ GLuint App::createProgram(std::vector<GLuint>& shaders)
 	return program;
 }
 
-GLuint App::createVertexBuffer(std::vector<vertex>& vertices)
-{
-	GLuint vb;
-	glGenBuffers(1, &vb);
-	glBindBuffer(GL_ARRAY_BUFFER, vb);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
-	
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), 0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, color));
-	
-	return vb;
-}
-
 void App::update(double dt)
 {
 	if (keys[GLFW_KEY_ESCAPE])
 		running = false;
 
+	for (Model* m : models)
+	{
+		m->update(dt);
+	}
 
 	timeCounter += dt;
 	glm::mat4 a = glm::lookAt(glm::vec3{ 0,0,5 }, { 0,0,-5 }, { 0,1,0 });
 	glm::mat4 p = glm::perspective(120.f, 1.f, 0.1f, 10.f);
-	world = p * a * glm::rotate(timeCounter, glm::vec3(1, 1, 1));
+	viewProjectionMatrix = p * a;
 }
 
 bool App::keys[GLFW_KEY_LAST] = {false};
@@ -149,10 +142,10 @@ bool App::keys[GLFW_KEY_LAST] = {false};
 void App::render()
 {
 	glUseProgram(forwardProgram);
-	glBindBuffer(GL_VERTEX_ARRAY, vertexBuffer);
-	glUniformMatrix4fv(2, 1, GL_FALSE, &world[0][0]);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
-	glBindBuffer(GL_VERTEX_ARRAY, 0);
+	for (Model* m : models)
+	{
+		m->render(&viewProjectionMatrix);
+	}
 	glUseProgram(0);
 }
 
@@ -161,10 +154,11 @@ void App::run()
 	running = true;
 	double previousTime = glfwGetTime(), currentTime = previousTime;
 	double deltaTime;
+	glEnable(GL_DEPTH_TEST);
 	while (running)
 	{
 		glfwSwapBuffers(window);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT |GL_DEPTH_BUFFER_BIT);
 		glfwPollEvents();
 		currentTime = glfwGetTime();
 		deltaTime = currentTime - previousTime; //time since last frame

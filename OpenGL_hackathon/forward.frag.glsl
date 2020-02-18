@@ -8,5 +8,5 @@ in VERTEX_DATA
 out vec4 fragment_color;
 
 void main(){
-	fragment_color = vec4(fs_in.color, 1);
+	fragment_color = vec4(fs_in.color/255.f, 1);
 }

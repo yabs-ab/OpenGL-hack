@@ -137,9 +137,13 @@
   <ItemGroup>
     <ClCompile Include="App.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Model.cpp" />
+    <ClCompile Include="ModelBuilder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
+    <ClInclude Include="Model.h" />
+    <ClInclude Include="ModelBuilder.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="forward.frag.glsl" />
