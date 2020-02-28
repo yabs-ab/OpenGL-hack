@@ -3,7 +3,7 @@ OBJ_DIR = obj
 INC_DIR = include
 SRC = $(wildcard $(SRC_DIR)/*.cpp)
 OBJ = $(patsubst %.cpp,%.o,$(patsubst $(SRC_DIR)%, $(OBJ_DIR)%, $(SRC)))
-BIN = oglhack.exe
+BIN = OpenGL_hackathon/oglhack
 
 CC = g++
 
